@@ -14,6 +14,7 @@
 2. Realtime Computer Metrics
  
   CPU: Temperatures, Core Utilizations, Voltages
+  
   GPU: Temperatures, Core Utilizations, Voltages
 
 3. Benchmarking
