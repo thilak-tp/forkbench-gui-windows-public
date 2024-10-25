@@ -3,7 +3,7 @@
 
 ## Features: 
 1. System information fetching.
-CPU:
+ CPU:
  Manufacturer, CPU Name, Codename, Release Date, Max. TDP, Technology, Model, Instruction Set, Max. Core Speed, Cores and Thread, Power and Energy efficient cores, Core Voltage, Current Core Speeds, Cache sizes, Motherboard Info, BIOS 
  information, RAM total size, page file, RAM Memory speed, DRAM Type, Channels
  GPU: GPU Name, Manufacturer, Release date, Max TDP, VRAM Size, Speed and Type, Base and Boost core clock, GPU Code, CUDA Cores, ROPs/TMUs, Texture fillrate, Pixel fillrate, Bus width, bandwidth, driver version, Support: Direct compute, 
