@@ -3,16 +3,20 @@
 
 ## Features: 
 1. System information fetching.
-CPU: Manufacturer, CPU Name, Codename, Release Date, Max. TDP, Technology, Model, Instruction Set, Max. Core Speed, Cores and Thread, Power and Energy efficient cores, Core Voltage, Current Core Speeds, Cache sizes, Motherboard Info, BIOS information, RAM total size, page file, RAM Memory speed, DRAM Type, Channels
-GPU: GPU Name, Manufacturer, Release date, Max TDP, VRAM Size, Speed and Type, Base and Boost core clock, GPU Code, CUDA Cores, ROPs/TMUs, Texture fillrate, Pixel fillrate, Bus width, bandwidth, driver version, Support: Direct compute, physx OpenGL, Vulkan, DirectX, Raytracing, DirectML
-Windows: Edition, Version and Build, Directx version, Device name, System type
-Storage: SSD/HDD Size and Speed
+CPU:
+ Manufacturer, CPU Name, Codename, Release Date, Max. TDP, Technology, Model, Instruction Set, Max. Core Speed, Cores and Thread, Power and Energy efficient cores, Core Voltage, Current Core Speeds, Cache sizes, Motherboard Info, BIOS 
+ information, RAM total size, page file, RAM Memory speed, DRAM Type, Channels
+ GPU: GPU Name, Manufacturer, Release date, Max TDP, VRAM Size, Speed and Type, Base and Boost core clock, GPU Code, CUDA Cores, ROPs/TMUs, Texture fillrate, Pixel fillrate, Bus width, bandwidth, driver version, Support: Direct compute, 
+ physx OpenGL, Vulkan, DirectX, Raytracing, DirectML
+ Windows: Edition, Version and Build, Directx version, Device name, System type
+ Storage: SSD/HDD Size and Speed
 
-2. Realtime Computer Metrics
-CPU: Temperatures, Core Utilizations, Voltages
-GPU: Temperatures, Core Utilizations, Voltages
+3. Realtime Computer Metrics
+ 
+ CPU: Temperatures, Core Utilizations, Voltages
+ GPU: Temperatures, Core Utilizations, Voltages
 
-3. Benchmarking
-ForkGPU Score, ForkCPU Score, ForkDisk Score and ForkRAM Score would be scores giving to each hardware on the basic of their performance.
-ForkScore would be the overall total score for the whole system.
+4. Benchmarking
+ ForkGPU Score, ForkCPU Score, ForkDisk Score and ForkRAM Score would be scores giving to each hardware on the basic of their performance.
+ ForkScore would be the overall total score for the whole system.
 
