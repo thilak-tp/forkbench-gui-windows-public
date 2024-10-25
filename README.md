@@ -19,6 +19,6 @@
 
 3. Benchmarking
  
- ForkGPU Score, ForkCPU Score, ForkDisk Score and ForkRAM Score would be scores giving to each hardware on the basic of their performance.
- ForkScore would be the overall total score for the whole system.
+      ForkGPU Score, ForkCPU Score, ForkDisk Score and ForkRAM Score would be scores giving to each hardware on the basic of their performance.
+      ForkScore would be the overall total score for the whole system.
 
