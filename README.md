@@ -11,12 +11,13 @@
  Windows: Edition, Version and Build, Directx version, Device name, System type
  Storage: SSD/HDD Size and Speed
 
-3. Realtime Computer Metrics
+2. Realtime Computer Metrics
  
  CPU: Temperatures, Core Utilizations, Voltages
  GPU: Temperatures, Core Utilizations, Voltages
 
-4. Benchmarking
+3. Benchmarking
+ 
  ForkGPU Score, ForkCPU Score, ForkDisk Score and ForkRAM Score would be scores giving to each hardware on the basic of their performance.
  ForkScore would be the overall total score for the whole system.
 
