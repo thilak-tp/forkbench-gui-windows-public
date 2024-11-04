@@ -22,3 +22,15 @@
       ForkGPU Score, ForkCPU Score, ForkDisk Score and ForkRAM Score would be scores giving to each hardware on the basic of their performance.
       ForkScore would be the overall total score for the whole system.
 
+
+## Development Phases
+
+Phase 1: 
+ - Development of a console application that will be the backbone of the information fetching and organising and also the crux of all the benchmarking that i'll do on the project
+
+Phase 2: 
+ - Development of the User Interface for the information collected
+
+Phase 3: 
+ -Further Enhancements and future developments
+
