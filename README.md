@@ -33,5 +33,5 @@ Phase 2:
  - Development of the User Interface for the information collected
 
 Phase 3: 
- -Further Enhancements and future developments
+ - Further Enhancements and future developments
 
