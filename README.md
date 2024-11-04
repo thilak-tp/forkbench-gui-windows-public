@@ -27,6 +27,7 @@
 
 Phase 1: 
  - Development of a console application that will be the backbone of the information fetching and organising and also the crux of all the benchmarking that i'll do on the project
+ - Design of the UI and also an App Logo 
 
 Phase 2: 
  - Development of the User Interface for the information collected
