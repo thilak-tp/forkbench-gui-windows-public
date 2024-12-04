@@ -1,5 +1,5 @@
- ![screenshot](resources/forWindows.png)
 # ForkBench
+![screenshot](resources/forWindows.png)
 System Information and Benchmark Tool for Windows 
 ## Features: 
 1. System information fetching.
