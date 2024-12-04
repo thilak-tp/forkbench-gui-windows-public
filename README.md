@@ -1,6 +1,6 @@
 # ForkBench
  System Information and Benchmark Tool for Windows 
-
+![screenshot](resources/forWindows.png)
 ## Features: 
 1. System information fetching.
     CPU:
