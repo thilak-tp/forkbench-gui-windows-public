@@ -1,0 +1,5 @@
+﻿  fb-main.cpp
+D:\Projects\C++ Development\Forkbench - Windows\forkbench-win32\forkbench-win32\fb-main.cpp(89,1): warning C4715: 'WndProc': not all control paths return a value
+  forkbench-win32.vcxproj -> D:\Projects\C++ Development\Forkbench - Windows\forkbench-win32\x64\Debug\forkbench-win32.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
