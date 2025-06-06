@@ -35,3 +35,6 @@ Phase 2:
 Phase 3: 
  - Further Enhancements and future developments
 
+
+Phase 1: Screengrab
+![screenshot](resources/alpha_screengrab.png)
