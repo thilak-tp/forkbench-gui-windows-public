@@ -18,12 +18,18 @@
     <ClCompile Include="fb-main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fetch-details.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fb-main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fetch-details.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

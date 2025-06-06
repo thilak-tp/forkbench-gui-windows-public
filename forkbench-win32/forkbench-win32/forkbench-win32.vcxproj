@@ -124,9 +124,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="fb-main.cpp" />
+    <ClCompile Include="fetch-details.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fb-main.h" />
+    <ClInclude Include="fetch-details.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
