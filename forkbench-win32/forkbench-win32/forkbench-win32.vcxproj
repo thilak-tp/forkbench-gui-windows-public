@@ -135,6 +135,7 @@
     <ResourceCompile Include="forkbench-win32.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\resources\forkIconNew.ico" />
     <Image Include="forkbench-main.ico" />
     <Image Include="icon1.ico" />
   </ItemGroup>
