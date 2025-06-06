@@ -84,7 +84,7 @@ class MotherboardInfo : public Computer {
 	std::wstring motherboardSerialNumber;
 	std::wstring motherboardBIOSVersion;
 	std::wstring motherboardReleaseDate;
-	std::wstring motherboardManufacturer;
+	
 
 };
 class SystemMemoryInfo: public Computer {
