@@ -3,10 +3,12 @@
 #include <Wbemidl.h>
 #include <comdef.h>
 #include <string>
-#pragma comment(lib, "wbemuuid.lib")
 
-std::wstring GetWMIInfo(const std::wstring& wmiClass, const std::wstring& property);
-void collectWMIInfo(HWND hwnd);
+
+#pragma comment(lib, "wbemuuid.lib")
+#include "app_defs.h"
+RetVal GetWMIInfo(const std::wstring& wmiClass, const std::wstring& property, std::wstring& result);
+//void collectWMIInfo(HWND hwnd);
 std::wstring decodeMemoryType(const std::wstring& typeCode);
 
 
@@ -20,11 +22,15 @@ class powerInfo : public Computer {
 	std::wstring powerBatteryChemistry;
 	std::wstring powerElementName;
 	std::wstring powerIsActive;
+public:
+	powerInfo();
 };
 class outputDeviceInfo : public Computer {
 	std::wstring soundDeviceName;
 	std::wstring soundDeviceManufacturer;
 	std::wstring soundDeviceStatus;
+public:
+	outputDeviceInfo();
 };
 class inputDeviceInfo  : public Computer {
 	std::wstring inputDeviceName;
@@ -33,6 +39,8 @@ class inputDeviceInfo  : public Computer {
 	std::wstring inputPointingDeviceName;
 	std::wstring inputPointingDeviceID;
 	std::wstring inputPointingDeviceNumberofButtons;
+public:
+	inputDeviceInfo();
 };
 
 class NetworkInfo : public Computer {
@@ -46,6 +54,8 @@ class NetworkInfo : public Computer {
 	std::wstring networkDefaultGateway;
 	std::wstring networkDNSHostName;
 	std::wstring networkDHCPEnabled;
+public:
+	NetworkInfo();
 };
 class OSInfo : public Computer {
 	std::wstring osName;
@@ -59,6 +69,8 @@ class OSInfo : public Computer {
 	std::wstring osLocale;
 	std::wstring osSerialNumber;
 	std::wstring osSystemDrive;
+public:
+	OSInfo(); 
 };
 class StorageInfo : public Computer {
 	std::wstring diskSize;
@@ -76,6 +88,8 @@ class StorageInfo : public Computer {
 	std::wstring diskCapacity;
 	std::wstring diskFreeSpace;
 	std::wstring diskFileSystemType;
+public:
+	StorageInfo();
 
 };
 class MotherboardInfo : public Computer {
@@ -84,18 +98,21 @@ class MotherboardInfo : public Computer {
 	std::wstring motherboardSerialNumber;
 	std::wstring motherboardBIOSVersion;
 	std::wstring motherboardReleaseDate;
-	
+public:
+	MotherboardInfo();
 
 };
 class SystemMemoryInfo: public Computer {
 	std::wstring totalPhysicalMemory;
 	std::wstring RAMType;
-	std::wstring RAMSpeed;
-	std::wstring RAMFormFactor;
-	std::wstring RAMManufacturer;
-	std::wstring RAMPartNumber;
-	std::wstring RAMSerialNumber;
-	std::wstring RAMCapacity;
+	std::wstring RAMSpeed;	
+	std::wstring RAMFormFactor;	
+	std::wstring RAMManufacturer;	
+	std::wstring RAMPartNumber;	
+	std::wstring RAMSerialNumber;	
+	std::wstring RAMCapacity;	
+public:
+	SystemMemoryInfo();
 };
 class GPUandDisplayInfo : public Computer {
 	std::wstring gpuName;
@@ -108,20 +125,44 @@ class GPUandDisplayInfo : public Computer {
 	std::wstring gpuMonitorType;
 	std::wstring gpuScreenHeight;
 	std::wstring gpuScreenWidth;
+	
+public:
 
+	GPUandDisplayInfo();
 };
 class CPUInfo : public Computer {
-	std::wstring cpuName;
-	std::wstring cpuCodeName;
+	std::wstring cpuManufacturer;        // Processor Manufacturer Name: Intel/ AMD
+	std::wstring cpuName;                //Processor Model Info:  Intel(R) [Processor Family] CPU [Model Number] @ [Clock Speed] \ "AMD [Family] [Model] [Details]"
 	std::wstring cpuNumberOfCores;
 	std::wstring cpuNumberOfThreads;
+	std::wstring cpuCodeName;            
 	std::wstring cpuMaxClockSpeed;
 	std::wstring cpuCurrentClockSpeed;
 	std::wstring cpuL2Cache;
 	std::wstring cpuL3Cache;
 	std::wstring cpuArchitecture;
-	std::wstring cpuManufacturer;
 	std::wstring cpuLoadPercentage;
 	std::wstring cpuVoltageCapacity;
+public:
+	CPUInfo();
+	
+	// Setter functions to fetch details
+	RetVal setCPUManufacturer();
+	RetVal setCPUName();
+	RetVal setCPUNumberOfCores();
+	RetVal setCPUNumberOfThreads();
+	RetVal setCPUCodeName();
+	RetVal setCPUMaxClockSpeed();
+	RetVal setCPUCurrentClockSpeed();
+	RetVal setCPUL2Cache();
+	RetVal setCPUL3Cache();
+	RetVal setCPUArchitecture();
+	RetVal setCPULoadPercentage();
+	RetVal setCPUVoltageCapacity();
+			  
+	// Getter functions to return asked values
+	std::wstring getCPUName();
+	std::wstring getCPUManufacturer();
+	std::wstring getCPUNumberOfCores();
+	std::wstring getCPUNumberOfThreads();
 };
-

@@ -1,10 +1,17 @@
+// Implicit headerfiles
 #include <windows.h>
 #include <tchar.h>
+#include <string>
+
+// Explicit headerfiles
 #include "resource.h"
 #include "fb-main.h"
-#include <string>
 #include "fetch-details.h"
-#include "minwindef.h"
+
+HINSTANCE hInst;
+HWND hCPUStatic, hCoreStatic, hRAMStatic, hThreadStatic, hCPUManufacturerStatic;
+HBITMAP hBitmap;
+
 // This is the entry point of the application. It creates a window and registers a class for it.
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	const wchar_t className[] = L"Forkbench";
@@ -23,14 +30,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// The above class is resigtered
 	if (!RegisterClassEx(&wc)) {
 		MessageBox(NULL, _T("Window Class Registration Failed"), _T("Error"), NULL);
-		return FAILURE;
+		return FAILED;
 	}
 	// This creates the actual visible window.
-	//HWND hwnd = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, className, WS_SYSMENU | WS_MINIMIZEBOX | WS_OVERLAPPEDWINDOW | WS_VSCROLL | WS_HSCROLL, CW_USEDEFAULT, CW_USEDEFAULT, 1000, 900, NULL, NULL, hInstance, NULL);
 	HWND hwnd = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, className, WS_SYSMENU | WS_MINIMIZEBOX | WS_OVERLAPPEDWINDOW , CW_USEDEFAULT, CW_USEDEFAULT, 1000, 900, NULL, NULL, hInstance, NULL);
 	if (!hwnd) {
 		MessageBox(NULL, _T("WIndows Creation Failed"), _T("Error"), NULL);
-		return FAILURE;
+		return FAILED;
 	}
 
 	ShowWindow(hwnd, nCmdShow);
@@ -48,19 +54,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 // A window procedure function catches messages from the windows so that we can handle these messages appropriately
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-	/*
-	static int scrollPosX = 0;
-    static int scrollPosY = 0;
-    static int maxScrollX = 1000; // max scroll range horizontally
-    static int maxScrollY = 1000; // max scroll range vertically
-   */
+	CPUInfo cpuInfo;
+	cpuInfo.setCPUName();
+	cpuInfo.setCPUManufacturer();
+	cpuInfo.setCPUNumberOfCores();
+	cpuInfo.setCPUNumberOfThreads();
 	switch (msg)
 	{
 		// To handle the dragging of the widnow without the title bar
 	case WM_LBUTTONDOWN:
 		ReleaseCapture();
 		SendMessage(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
-		break;
+		return 0;
 
 	case WM_CLOSE:
 		// When user tries to close the window
@@ -68,116 +73,43 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 			DestroyWindow(hwnd);  // Proceed with closing
 		}
 		return 0;
-		/*
-	case WM_PAINT: {
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hwnd, &ps);
+	case WM_CREATE: {
+		    hBitmap = (HBITMAP)LoadImageW(
+			GetModuleHandleW(NULL),
+			MAKEINTRESOURCE(IDB_BITMAP2),
+			IMAGE_BITMAP,
+			0, 0,
+			LR_DEFAULTCOLOR);
 
-		// Optional: Create custom font
-		HFONT hFont = CreateFontW(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
-			DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,
-			CLEARTYPE_QUALITY, VARIABLE_PITCH, L"Segoe UI");
-
-		HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
-		// Fetching CPU details using WMI
-		std::wstring cpuName = GetWMIInfo(L"Win32_Processor", L"Name");
-		std::wstring cpuCores = GetWMIInfo(L"Win32_Processor", L"NumberOfCores");
-		std::wstring cpuThreads = GetWMIInfo(L"Win32_Processor", L"ThreadCount");
-		std::wstring cpuCodename = GetWMIInfo(L"Win32_Processor", L"Caption");
-		// Motherboard and BIOS details
-		std::wstring mobo = GetWMIInfo(L"Win32_BaseBoard", L"Product");
-		std::wstring bios = GetWMIInfo(L"Win32_BIOS", L"SMBIOSBIOSVersion");
-		// RAM details
-		std::wstring ramSize = GetWMIInfo(L"Win32_ComputerSystem", L"TotalPhysicalMemory");
-		std::wstring ramType = GetWMIInfo(L"Win32_PhysicalMemory", L"MemoryType");
-		std::wstring ramSpeed = GetWMIInfo(L"Win32_PhysicalMemory", L"Speed");
-		// GPU details
-		std::wstring gpuName = GetWMIInfo(L"Win32_VideoController", L"Name");
-		std::wstring gpuDriver = GetWMIInfo(L"Win32_VideoController", L"DriverVersion");
-		std::wstring vram = GetWMIInfo(L"Win32_VideoController", L"AdapterRAM");
-		// OS details
-		std::wstring osVersion = GetWMIInfo(L"Win32_OperatingSystem", L"Caption");
-		std::wstring build = GetWMIInfo(L"Win32_OperatingSystem", L"BuildNumber");
-		// Storage details
-		std::wstring diskSize = GetWMIInfo(L"Win32_DiskDrive", L"Size");
-		std::wstring diskType = GetWMIInfo(L"Win32_DiskDrive", L"MediaType");
-
-
-
-
-
-		RECT rect;
-		GetClientRect(hwnd, &rect);
-		TextOutW(hdc, 20, 20, cpuName.c_str(), (int)cpuName.length()); break;
-		DrawTextW(hdc, cpuName.c_str(), -1, &rect, DT_CENTER | DT_BOTTOM | DT_SINGLELINE);
-		SelectObject(hdc, oldFont);
-		DeleteObject(hFont);
-		EndPaint(hwnd, &ps);
-		return 0;
-	
-	}*/
-	/*case WM_VSCROLL:
-	{
-		int yPos = scrollPosY;
-		switch (LOWORD(wparam))
-		{
-		case SB_LINEUP:    yPos -= 10; break;
-		case SB_LINEDOWN:  yPos += 10; break;
-		case SB_PAGEUP:    yPos -= 50; break;
-		case SB_PAGEDOWN:  yPos += 50; break;
-		case SB_THUMBPOSITION:
-		case SB_THUMBTRACK:
-			yPos = HIWORD(wparam);
-			break;
-		}
-		if (yPos < 0) yPos = 0;
-		if (yPos > maxScrollY) yPos = maxScrollY;
-		if (yPos != scrollPosY)
-		{
-			scrollPosY = yPos;
-			ScrollWindow(hwnd, 0, scrollPosY - yPos, NULL, NULL);
-			SetScrollPos(hwnd, SB_VERT, scrollPosY, TRUE);
-			InvalidateRect(hwnd, NULL, TRUE);
-		}
+		hCPUStatic = CreateWindowW(L"STATIC", L"CPU: Loading...",WS_CHILD | WS_VISIBLE, 20, 30, 600, 25, hwnd, NULL, hInst, NULL);
+		hCoreStatic = CreateWindowW(L"STATIC", L"Cores: Loading...",WS_CHILD | WS_VISIBLE, 20, 60, 600, 25, hwnd, NULL, hInst, NULL);
+		hRAMStatic = CreateWindowW(L"STATIC", L"RAM: Loading...",WS_CHILD | WS_VISIBLE, 20, 90, 600, 25, hwnd, NULL, hInst, NULL);
+		hThreadStatic = CreateWindowW(L"STATIC", L"CPU: Loading...", WS_CHILD | WS_VISIBLE, 20, 120, 600, 25, hwnd, NULL, hInst, NULL);
+		hCPUManufacturerStatic = CreateWindowW(L"STATIC", L"CPU: Loading...", WS_CHILD | WS_VISIBLE, 20, 150, 600, 25, hwnd, NULL, hInst, NULL);
 		break;
 	}
-	case WM_HSCROLL:
-	{
-		int xPos = scrollPosX;
-		switch (LOWORD(wparam))
-		{
-		case SB_LINELEFT:  xPos -= 10; break;
-		case SB_LINERIGHT: xPos += 10; break;
-		case SB_PAGELEFT:  xPos -= 50; break;
-		case SB_PAGERIGHT: xPos += 50; break;
-		case SB_THUMBPOSITION:
-		case SB_THUMBTRACK:
-			xPos = HIWORD(wparam);
-			break;
-		}
-		if (xPos < 0) xPos = 0;
-		if (xPos > maxScrollX) xPos = maxScrollX;
-		if (xPos != scrollPosX)
-		{
-			scrollPosX = xPos;
-			ScrollWindow(hwnd, scrollPosX - xPos, 0, NULL, NULL);
-			SetScrollPos(hwnd, SB_HORZ, scrollPosX, TRUE);
-			InvalidateRect(hwnd, NULL, TRUE);
-		}
-		break;
-	
-	case WM_CREATE:
-		// Initialize scrollbar range and position
-		SetScrollRange(hwnd, SB_VERT, 0, maxScrollY, TRUE);
-		SetScrollPos(hwnd, SB_VERT, scrollPosY, TRUE);
-		SetScrollRange(hwnd, SB_HORZ, 0, maxScrollX, TRUE);
-		SetScrollPos(hwnd, SB_HORZ, scrollPosX, TRUE);
-		break;
-		}*/
 	case WM_PAINT: {
-		collectWMIInfo(hwnd);
-	} return 0;
+		UpdateSystemInfo(cpuInfo);
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hwnd, &ps);
+		
+		if (hBitmap) {
+			HDC hMemDC = CreateCompatibleDC(hdc);
+			SelectObject(hMemDC, hBitmap);
 
+			BITMAP bmp;
+			GetObject(hBitmap, sizeof(BITMAP), &bmp);
+
+			BitBlt(hdc, 650, 20, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
+
+			DeleteDC(hMemDC);
+		}
+
+		EndPaint(hwnd, &ps);
+		}
+		return 0;
+
+		
 	case WM_DESTROY:
 		// Called when the window is being destroyed
 		PostQuitMessage(0);  // Exit message loop
@@ -203,3 +135,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 		return DefWindowProc(hwnd, msg, wparam, lparam);
 	}
  }
+void UpdateSystemInfo(CPUInfo& info) {
+	std::wstring cpuName = info.getCPUName();
+	std::wstring cores = info.getCPUNumberOfCores();
+	std::wstring threads = info.getCPUNumberOfThreads();
+	std::wstring cpuManufacturer = info.getCPUManufacturer();
+
+	if (!cpuName.empty()) SetWindowTextW(hCPUStatic, (L"CPU: " + cpuName).c_str());
+	if (!cores.empty()) SetWindowTextW(hCoreStatic, (L"Cores: " + cores).c_str());
+	if (!threads.empty()) SetWindowTextW(hThreadStatic, (L"Threads: " + threads).c_str());
+	if (!cpuManufacturer.empty()) SetWindowTextW(hCPUManufacturerStatic, (L"Manufacturer: " + cpuManufacturer).c_str());
+
+	
+}

@@ -32,6 +32,9 @@
     <ClInclude Include="fetch-details.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="app_defs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="forkbench-win32.rc">
@@ -46,6 +49,15 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\..\resources\forkIconNew.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\resources\icon-files\intel-icon-256p.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\resources\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\resources\icon-files\amd-icon-256p.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

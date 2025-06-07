@@ -37,4 +37,9 @@ Phase 3:
 
 
 Phase 1: Screengrab
+- 7th June 2025
 ![screenshot](resources/alpha_screengrab.png)
+
+- 8th June 2025
+![screenshot](resources/valpa_screenshot1.png)
+

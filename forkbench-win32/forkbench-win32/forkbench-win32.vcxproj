@@ -127,6 +127,7 @@
     <ClCompile Include="fetch-details.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app_defs.h" />
     <ClInclude Include="fb-main.h" />
     <ClInclude Include="fetch-details.h" />
     <ClInclude Include="resource.h" />
@@ -135,7 +136,10 @@
     <ResourceCompile Include="forkbench-win32.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\resources\bitmap1.bmp" />
     <Image Include="..\..\resources\forkIconNew.ico" />
+    <Image Include="..\..\resources\icon-files\amd-icon-256p.bmp" />
+    <Image Include="..\..\resources\icon-files\intel-icon-256p.bmp" />
     <Image Include="forkbench-main.ico" />
     <Image Include="icon1.ico" />
   </ItemGroup>

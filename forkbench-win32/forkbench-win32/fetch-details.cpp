@@ -1,38 +1,37 @@
 #include "fetch-details.h"
-/*
-std::wstring GetWMIInfo(const std::wstring& wmiClass, const std::wstring& property) {
+
+RetVal GetWMIInfo(const std::wstring& wmiClass, const std::wstring& property, std::wstring& result) {
     HRESULT hres;
     IWbemLocator* pLoc = nullptr;
     IWbemServices* pSvc = nullptr;
     IEnumWbemClassObject* pEnumerator = nullptr;
     IWbemClassObject* pclsObj = nullptr;
     ULONG uReturn = 0;
-    std::wstring result;
+    //std::wstring result;
 
     hres = CoInitializeEx(0, COINIT_MULTITHREADED);
-    if (FAILED(hres)) return L"COM init failed";
+    if (FAILED(hres)) return COM_INIT_FAILED;
 
     hres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT,
         RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
-    if (FAILED(hres)) return L"Security init failed";
+    if (FAILED(hres)) return SEC_INIT_FAILED;
 
     hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER,
         IID_IWbemLocator, (LPVOID*)&pLoc);
-    if (FAILED(hres)) return L"WbemLocator creation failed";
+    if (FAILED(hres)) return WLOCATOR_CREATION_FAILED;
 
     hres = pLoc->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0,
         NULL, 0, 0, &pSvc);
-    if (FAILED(hres)) return L"ConnectServer failed";
+    if (FAILED(hres)) return CONNECT_SERVER_FAILED;
 
     hres = CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr,
         RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
-
-    if (FAILED(hres)) return L"SetProxyBlanket failed";
+    if (FAILED(hres)) return SET_PROXY_BLANKED_FAILED;
 
     std::wstring query = L"SELECT " + property + L" FROM " + wmiClass;
     hres = pSvc->ExecQuery(_bstr_t("WQL"), _bstr_t(query.c_str()),
         WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
-    if (FAILED(hres)) return L"ExecQuery failed";
+    if (FAILED(hres)) return QUERY_EXEC_FAILED;
 
     while (pEnumerator) {
         HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
@@ -40,21 +39,37 @@ std::wstring GetWMIInfo(const std::wstring& wmiClass, const std::wstring& proper
 
         VARIANT vtProp;
         hr = pclsObj->Get(property.c_str(), 0, &vtProp, 0, 0);
-        if (SUCCEEDED(hr) && (vtProp.vt == VT_BSTR)) {
-            result = _bstr_t(vtProp.bstrVal);
+        if (SUCCEEDED(hr)) {
+            switch (vtProp.vt) {
+            case VT_BSTR:
+                result = vtProp.bstrVal;
+                break;
+            case VT_I4:
+            case VT_UI4:
+                result = std::to_wstring(vtProp.ulVal);
+                break;
+            case VT_I8:
+            case VT_UI8:
+                result = std::to_wstring(vtProp.ullVal);
+                break;
+            case VT_BOOL:
+                result = (vtProp.boolVal == VARIANT_TRUE) ? L"True" : L"False";
+                break;
+            default:
+                return UNSUPPORTED_TYPE;
+                break;
+            }
         }
         VariantClear(&vtProp);
         pclsObj->Release();
     }
 
-    pSvc->Release();
-    pLoc->Release();
-    pEnumerator->Release();
+    if (pSvc) pSvc->Release();
+    if (pLoc) pLoc->Release();
+    if (pEnumerator) pEnumerator->Release();
     CoUninitialize();
-    return result;
+    return SUCCESS;
 }
-*/
-
 std::wstring decodeMemoryType(const std::wstring& typeCode) {
     if (typeCode == L"20") return L"DDR";
     if (typeCode == L"21") return L"DDR2";
@@ -63,7 +78,7 @@ std::wstring decodeMemoryType(const std::wstring& typeCode) {
     if (typeCode == L"30") return L"DDR5";
     return L"Unknown";
 }
-
+/*
 void collectWMIInfo(HWND hwnd) {
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(hwnd, &ps);
@@ -216,73 +231,244 @@ void collectWMIInfo(HWND hwnd) {
     EndPaint(hwnd, &ps);
     
 }
-std::wstring GetWMIInfo(const std::wstring& wmiClass, const std::wstring& property) {
-    HRESULT hres;
-    IWbemLocator* pLoc = nullptr;
-    IWbemServices* pSvc = nullptr;
-    IEnumWbemClassObject* pEnumerator = nullptr;
-    IWbemClassObject* pclsObj = nullptr;
-    ULONG uReturn = 0;
-    std::wstring result;
+*/
 
-    hres = CoInitializeEx(0, COINIT_MULTITHREADED);
-    if (FAILED(hres)) return L"COM init failed";
-
-    hres = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT,
-        RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
-    if (FAILED(hres)) return L"Security init failed";
-
-    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER,
-        IID_IWbemLocator, (LPVOID*)&pLoc);
-    if (FAILED(hres)) return L"WbemLocator creation failed";
-
-    hres = pLoc->ConnectServer(_bstr_t(L"ROOT\\CIMV2"), NULL, NULL, 0,
-        NULL, 0, 0, &pSvc);
-    if (FAILED(hres)) return L"ConnectServer failed";
-
-    hres = CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr,
-        RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
-    if (FAILED(hres)) return L"SetProxyBlanket failed";
-
-    std::wstring query = L"SELECT " + property + L" FROM " + wmiClass;
-    hres = pSvc->ExecQuery(_bstr_t("WQL"), _bstr_t(query.c_str()),
-        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
-    if (FAILED(hres)) return L"ExecQuery failed";
-
-    while (pEnumerator) {
-        HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
-        if (!uReturn) break;
-
-        VARIANT vtProp;
-        hr = pclsObj->Get(property.c_str(), 0, &vtProp, 0, 0);
-        if (SUCCEEDED(hr)) {
-            switch (vtProp.vt) {
-            case VT_BSTR:
-                result = vtProp.bstrVal;
-                break;
-            case VT_I4:
-            case VT_UI4:
-                result = std::to_wstring(vtProp.ulVal);
-                break;
-            case VT_I8:
-            case VT_UI8:
-                result = std::to_wstring(vtProp.ullVal);
-                break;
-            case VT_BOOL:
-                result = (vtProp.boolVal == VARIANT_TRUE) ? L"True" : L"False";
-                break;
-            default:
-                result = L"[Unsupported Type]";
-                break;
-            }
-        }
-        VariantClear(&vtProp);
-        pclsObj->Release();
-    }
-
-    if (pSvc) pSvc->Release();
-    if (pLoc) pLoc->Release();
-    if (pEnumerator) pEnumerator->Release();
-    CoUninitialize();
-    return result;
+powerInfo::powerInfo() {
+    powerBatteryStatus = L"";
+    powerBatteryChargeRemaining = L"";
+    powerEstimatedRunTime = L"";
+    powerBatteryChemistry = L"";
+    powerElementName = L"";
+    powerIsActive = L"";
 }
+
+outputDeviceInfo::outputDeviceInfo() {
+    soundDeviceName = L"";
+    soundDeviceManufacturer = L"";
+    soundDeviceStatus = L"";
+}
+
+inputDeviceInfo::inputDeviceInfo() {
+    inputDeviceName = L"";
+    inputDeviceID = L"";
+    inputDeviceNumberofFunctionKeys = L"";
+    inputPointingDeviceName = L"";
+    inputPointingDeviceID = L"";
+    inputPointingDeviceNumberofButtons = L"";
+}
+
+NetworkInfo::NetworkInfo() {
+    networkAdapterName = L"";
+    networkMACAddress = L"";
+    networkConnectionID = L"";
+    networkSpeed = L"";
+    networkAdapterType = L"";
+    networkAdapterDescription = L"";
+    networkAdapterIPAddress = L"";
+    networkDefaultGateway = L"";
+    networkDNSHostName = L"";
+    networkDHCPEnabled = L"";
+
+}
+
+OSInfo::OSInfo() {
+    osName = L"";
+    osVersion = L"";
+    osBuildNumber = L"";
+    osUserName = L"";
+    osLastBootUpTime = L"";
+    osInstallDate = L"";
+    osRegisteredUser = L"";
+    OSArchitecture = L"";
+    osLocale = L"";
+    osSerialNumber = L"";
+    osSystemDrive = L"";
+}
+
+StorageInfo::StorageInfo() {
+    diskSize = L"";
+    diskType = L"";
+    diskModel = L"";
+    diskSerialNumber = L"";
+    diskInterfaceType = L"";
+    diskFirmwareVersion = L"";
+    diskPartition = L"";
+    diskDeviceID = L"";
+    diskFileSystem = L"";
+    diskVolumeName = L"";
+    diskLabel = L"";
+    diskDriveLetter = L"";
+    diskCapacity = L"";
+    diskFreeSpace = L"";
+    diskFileSystemType = L"";
+}
+
+MotherboardInfo::MotherboardInfo() {
+    motherboardManufacturer = L"";
+    motherboardProductName = L"";
+    motherboardSerialNumber = L"";
+    motherboardBIOSVersion = L"";
+    motherboardReleaseDate = L"";
+}
+
+SystemMemoryInfo::SystemMemoryInfo() {
+    totalPhysicalMemory = L"";
+    RAMType = L"";
+    RAMSpeed = L"";
+    RAMFormFactor = L"";
+    RAMManufacturer = L"";
+    RAMPartNumber = L"";
+    RAMSerialNumber = L"";
+    RAMCapacity = L"";
+}
+
+GPUandDisplayInfo::GPUandDisplayInfo() {
+    gpuName = L"";
+    gpuDriverVer = L"";
+    gpuTotalVRAM = L"";
+    gpuVideoModeDescription = L"";
+    gpuCurrentRefreshRate = L"";
+    gpuCurrentHResolution = L"";
+    gpuCurrentVResolution = L"";
+    gpuMonitorType = L"";
+    gpuScreenHeight = L"";
+    gpuScreenWidth = L"";
+}
+
+CPUInfo::CPUInfo() {
+    cpuName = L"";
+    cpuCodeName = L"";
+    cpuNumberOfCores = L"";
+    cpuNumberOfThreads = L"";
+    cpuMaxClockSpeed = L"";
+    cpuCurrentClockSpeed = L"";
+    cpuL2Cache = L"";
+    cpuL3Cache = L"";
+    cpuArchitecture = L"";
+    cpuManufacturer = L"";
+    cpuLoadPercentage = L"";
+    cpuVoltageCapacity = L"";
+}
+RetVal CPUInfo::setCPUManufacturer() {
+    RetVal ret = GetWMIInfo(L"Win32_Processor", L"Manufacturer", cpuManufacturer);
+    if (cpuManufacturer == L"GenuineIntel")
+        cpuManufacturer = L"Intel";
+    else if (cpuManufacturer == L"AuthenticAMD")
+        cpuManufacturer = L"AMD";
+   
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+
+}
+RetVal CPUInfo::setCPUName() {
+    RetVal ret = GetWMIInfo(L"Win32_Processor", L"Name", cpuName);
+    switch (ret) {
+   
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+    
+}
+
+
+RetVal CPUInfo::setCPUNumberOfCores() {
+    RetVal ret = GetWMIInfo(L"Win32_Processor", L"NumberOfCores", cpuNumberOfCores);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+
+}
+RetVal CPUInfo::setCPUNumberOfThreads() {
+    RetVal ret = GetWMIInfo(L"Win32_Processor", L"ThreadCount", cpuNumberOfThreads);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+
+}
+RetVal CPUInfo::setCPUCodeName() {
+
+
+}
+RetVal CPUInfo::setCPUMaxClockSpeed() {
+
+
+}
+RetVal CPUInfo::setCPUCurrentClockSpeed() {
+
+
+}
+RetVal CPUInfo::setCPUL2Cache() {
+
+
+}
+RetVal CPUInfo::setCPUL3Cache() {
+
+
+}
+RetVal CPUInfo::setCPUArchitecture() {
+
+
+}
+
+RetVal CPUInfo::setCPULoadPercentage() {
+
+
+}
+RetVal CPUInfo::setCPUVoltageCapacity() {
+
+
+}
+
+
+std::wstring CPUInfo::getCPUManufacturer() {
+    return cpuManufacturer;
+}
+
+std::wstring CPUInfo::getCPUName() {
+    return cpuName;
+}
+
+std::wstring CPUInfo::getCPUNumberOfCores() {
+    return cpuNumberOfCores;
+}
+
+std::wstring CPUInfo::getCPUNumberOfThreads() {
+    return cpuNumberOfThreads;
+}
+
+
