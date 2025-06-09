@@ -123,11 +123,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cpu-benchmark.cpp" />
     <ClCompile Include="fb-main.cpp" />
     <ClCompile Include="fetch-details.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app_defs.h" />
+    <ClInclude Include="cpu-benchmark.h" />
     <ClInclude Include="fb-main.h" />
     <ClInclude Include="fetch-details.h" />
     <ClInclude Include="resource.h" />
@@ -142,6 +144,10 @@
     <Image Include="..\..\..\res\ramIcon.bmp" />
     <Image Include="..\..\resources\bitmap1.bmp" />
     <Image Include="..\..\resources\forkIconNew.ico" />
+    <Image Include="..\..\resources\gpu-amd.bmp" />
+    <Image Include="..\..\resources\gpu-intel.bmp" />
+    <Image Include="..\..\resources\gpu-nvidia.bmp" />
+    <Image Include="..\..\resources\gpu-unknown.bmp" />
     <Image Include="..\..\resources\icon-files\amd-icon-256p.bmp" />
     <Image Include="..\..\resources\icon-files\forkbench-logo-final.ico" />
     <Image Include="..\..\resources\icon-files\intel-icon-256p.bmp" />

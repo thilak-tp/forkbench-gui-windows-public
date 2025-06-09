@@ -775,7 +775,7 @@ RetVal GPUandDisplayInfo::setgpuName(){
     return SUCCESS;
 }
 RetVal GPUandDisplayInfo::setgpuDriverVer() {
-    RetVal ret = GetWMIInfo(L"Win32_VideoController", L"Name", gpuName);
+    RetVal ret = GetWMIInfo(L"Win32_VideoController", L"DriverVersion", gpuDriverVer);
     switch (ret) {
 
     case COM_INIT_FAILED: return FAILED;
@@ -806,7 +806,18 @@ RetVal GPUandDisplayInfo::setgpuAdapterCompatibility() {
     return SUCCESS;
 }
 RetVal GPUandDisplayInfo::setgpuDriverDate() {
+    RetVal ret = GetWMIInfo(L"Win32_VideoController", L"DriverDate", gpuDriverDate);
+    switch (ret) {
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
 
+    }
+    return SUCCESS;
 }
 
 RetVal GPUandDisplayInfo::setgpuTotalVRAM() {
@@ -846,4 +857,12 @@ std::wstring GPUandDisplayInfo::getgpuName() {
 
 std::wstring GPUandDisplayInfo::getgpuAdapterCompatibility() {
     return gpuAdapterCompatibility;
+}
+
+std::wstring GPUandDisplayInfo::getgpuDriverVer() {
+    return gpuDriverVer;
+}
+
+std::wstring GPUandDisplayInfo::getgpuDriverDate() {
+    return gpuDriverDate;
 }

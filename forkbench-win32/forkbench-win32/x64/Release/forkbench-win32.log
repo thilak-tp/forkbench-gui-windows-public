@@ -1,10 +1,15 @@
 ﻿  fb-main.cpp
-D:\Projects\C++ Development\new clone forkbench\forkbench-gui-windows-public\forkbench-win32\forkbench-win32\fb-main.cpp(331,22): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+D:\Projects\C++ Development\new clone forkbench\forkbench-gui-windows-public\forkbench-win32\forkbench-win32\resource.h(15,1): warning C4005: 'IDB_BITMAP8': macro redefinition
+  (compiling source file 'fb-main.cpp')
+      D:\Projects\C++ Development\new clone forkbench\forkbench-gui-windows-public\forkbench-win32\forkbench-win32\resource.h(8,1):
+      see previous definition of 'IDB_BITMAP8'
+  
+D:\Projects\C++ Development\new clone forkbench\forkbench-gui-windows-public\forkbench-win32\forkbench-win32\fb-main.cpp(204,22): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
   Generating code
-D:\Projects\C++ Development\new clone forkbench\forkbench-gui-windows-public\forkbench-win32\forkbench-win32\fb-main.cpp(280): warning C4715: 'WndProc': not all control paths return a value
-  1 of 198 functions ( 0.5%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+D:\Projects\C++ Development\new clone forkbench\forkbench-gui-windows-public\forkbench-win32\forkbench-win32\fb-main.cpp(146): warning C4715: 'WndProc': not all control paths return a value
+  3 of 218 functions ( 1.4%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   forkbench-win32.vcxproj -> D:\Projects\C++ Development\new clone forkbench\forkbench-gui-windows-public\forkbench-win32\x64\Release\forkbench-win32.exe
   'pwsh.exe' is not recognized as an internal or external command,

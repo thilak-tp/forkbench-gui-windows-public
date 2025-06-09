@@ -21,6 +21,9 @@
     <ClCompile Include="fetch-details.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cpu-benchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fb-main.h">
@@ -33,6 +36,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="app_defs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu-benchmark.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -73,6 +79,18 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\..\..\res\ramIcon.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\resources\gpu-unknown.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\resources\gpu-nvidia.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\resources\gpu-intel.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\resources\gpu-amd.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
