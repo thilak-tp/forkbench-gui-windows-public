@@ -44,5 +44,5 @@ Phase 1: Screengrab
 ![screenshot](resources/valpa_screenshot1.png)
 
 - 8th June 2025
-![screenshot](resources/screen862025.png)
+![screenshot](resources/alpha_screengrab2.png)
 
