@@ -60,5 +60,20 @@
     <Image Include="..\..\resources\icon-files\amd-icon-256p.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\..\..\res\cpu-amd.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\res\cpu-intel.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\res\cpu-unknown.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\resources\icon-files\forkbench-logo-final.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\res\ramIcon.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -1,4 +1,87 @@
 #include "fetch-details.h"
+std::wstring decodeProcessorArchitecture(std::wstring architectureCodeInput) {
+    int code = std::stoi(architectureCodeInput);
+    switch (code) {
+        case 0: return L"x86";
+        case 1: return L"MIPS";
+        case 2: return L"Alpha";
+        case 3: return L"PowerPC";
+        case 5: return L"ARM32";
+        case 6: return L"IA-64";
+        case 9: return L"x64";
+        case 12: return L"ARM64";
+        default: return L"Unknown";
+        
+    }
+}
+RetVal CPUInfo::getL1CacheSize(std::wstring& result) {
+    HRESULT hres;
+    IWbemLocator* pLoc = nullptr;
+    IWbemServices* pSvc = nullptr;
+    IEnumWbemClassObject* pEnumerator = nullptr;
+    IWbemClassObject* pclsObj = nullptr;
+    ULONG uReturn = 0;
+
+    hres = CoInitializeEx(0, COINIT_MULTITHREADED);
+    if (FAILED(hres)) return COM_INIT_FAILED;
+
+    hres = CoInitializeSecurity(NULL, -1, NULL, NULL,
+        RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE,
+        NULL, EOAC_NONE, NULL);
+    if (FAILED(hres)) {
+        CoUninitialize();
+        return SEC_INIT_FAILED;
+    }
+
+    hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER,
+        IID_IWbemLocator, (LPVOID*)&pLoc);
+    if (FAILED(hres)) {
+        CoUninitialize();
+        return WLOCATOR_CREATION_FAILED;
+    }
+
+    hres = pLoc->ConnectServer(
+        SysAllocString(L"ROOT\\CIMV2"), nullptr, nullptr, 0, NULL, 0, 0, &pSvc);
+    if (FAILED(hres)) {
+        pLoc->Release();
+        CoUninitialize();
+        return CONNECT_SERVER_FAILED;
+    }
+
+    hres = pSvc->ExecQuery(
+        SysAllocString(L"WQL"),
+        SysAllocString(L"SELECT InstalledSize, Level FROM Win32_CacheMemory WHERE Level = 3"),
+        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+        NULL, &pEnumerator);
+    if (FAILED(hres)) {
+        if (pSvc) pSvc->Release();
+        if (pLoc) pLoc->Release();
+        CoUninitialize();
+        return QUERY_EXEC_FAILED;
+    }
+
+    while (pEnumerator && pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn) == S_OK) {
+        if (pclsObj) {
+            VARIANT vtSize;
+            VariantInit(&vtSize);
+            hres = pclsObj->Get(L"InstalledSize", 0, &vtSize, 0, 0);
+            if (SUCCEEDED(hres) && vtSize.vt == VT_I4) {
+                result += std::to_wstring(vtSize.intVal) ;
+            }
+            VariantClear(&vtSize);
+            pclsObj->Release();
+            pclsObj = nullptr;
+        }
+    }
+
+    if (pSvc) pSvc->Release();
+    if (pLoc) pLoc->Release();
+    if (pEnumerator) pEnumerator->Release();
+    CoUninitialize();
+
+    //result = result.empty() ? L"L1 Cache not found.\n" : result;
+    return SUCCESS;
+}
 
 RetVal GetWMIInfo(const std::wstring& wmiClass, const std::wstring& property, std::wstring& result) {
     HRESULT hres;
@@ -311,16 +394,7 @@ MotherboardInfo::MotherboardInfo() {
     motherboardReleaseDate = L"";
 }
 
-SystemMemoryInfo::SystemMemoryInfo() {
-    totalPhysicalMemory = L"";
-    RAMType = L"";
-    RAMSpeed = L"";
-    RAMFormFactor = L"";
-    RAMManufacturer = L"";
-    RAMPartNumber = L"";
-    RAMSerialNumber = L"";
-    RAMCapacity = L"";
-}
+
 
 GPUandDisplayInfo::GPUandDisplayInfo() {
     gpuName = L"";
@@ -333,6 +407,10 @@ GPUandDisplayInfo::GPUandDisplayInfo() {
     gpuMonitorType = L"";
     gpuScreenHeight = L"";
     gpuScreenWidth = L"";
+    gpuDriverDate = L"";
+    gpuAdapterCompatibility = L""; // Manufacturer
+    gpuVideoMemoryType = L"";
+    gpuVideoArchitecture = L"";
 }
 
 CPUInfo::CPUInfo() {
@@ -342,6 +420,7 @@ CPUInfo::CPUInfo() {
     cpuNumberOfThreads = L"";
     cpuMaxClockSpeed = L"";
     cpuCurrentClockSpeed = L"";
+    cpuL2Cache = L"";
     cpuL2Cache = L"";
     cpuL3Cache = L"";
     cpuArchitecture = L"";
@@ -420,27 +499,103 @@ RetVal CPUInfo::setCPUNumberOfThreads() {
     return SUCCESS;
 
 }
-RetVal CPUInfo::setCPUCodeName() {
 
-
-}
 RetVal CPUInfo::setCPUMaxClockSpeed() {
 
+    RetVal ret = GetWMIInfo(L"Win32_Processor", L"MaxClockSpeed", cpuMaxClockSpeed);
+    switch (ret) {
 
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
 }
 RetVal CPUInfo::setCPUCurrentClockSpeed() {
+    RetVal ret = GetWMIInfo(L"Win32_Processor", L"CurrentClockSpeed", cpuCurrentClockSpeed);
+    switch (ret) {
 
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+RetVal CPUInfo::setCPUL1Cache() {
+    RetVal ret = getL1CacheSize(cpuL1Cache);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
 
 }
 RetVal CPUInfo::setCPUL2Cache() {
+    RetVal ret = GetWMIInfo(L"Win32_Processor", L"L2CacheSize", cpuL2Cache);
+    switch (ret) {
 
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
 
 }
 RetVal CPUInfo::setCPUL3Cache() {
+    RetVal ret = GetWMIInfo(L"Win32_Processor", L"L3CacheSize", cpuL3Cache);
+    switch (ret) {
 
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
 
 }
 RetVal CPUInfo::setCPUArchitecture() {
+    RetVal ret = GetWMIInfo(L"Win32_Processor", L"Architecture", cpuArchitecture);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+
+}
+RetVal CPUInfo::setCPUCodeName() {
 
 
 }
@@ -471,4 +626,224 @@ std::wstring CPUInfo::getCPUNumberOfThreads() {
     return cpuNumberOfThreads;
 }
 
+std::wstring CPUInfo::getCPUMaxClockSpeed() {
+    return cpuMaxClockSpeed;
+}
 
+std::wstring CPUInfo::getCPUCurrentClockSpeed() {
+    return cpuCurrentClockSpeed;
+}
+std::wstring CPUInfo::getCPUL1Cache() {
+    return cpuL1Cache;
+}
+std::wstring CPUInfo::getCPUL2Cache() {
+    return cpuL2Cache;
+}
+
+std::wstring CPUInfo::getCPUL3Cache() {
+    return cpuL3Cache;
+}
+
+std::wstring CPUInfo::getCPUArchitecture() {
+    return cpuArchitecture;
+}
+
+
+// System Memory Info Implementation
+SystemMemoryInfo::SystemMemoryInfo() {
+    totalPhysicalMemory = L"";
+    RAMType = L"";
+    RAMSpeed = L"";
+    RAMFormFactor = L"";
+    RAMManufacturer = L"";
+    RAMPartNumber = L"";
+    RAMSerialNumber = L"";
+    RAMCapacity = L"";
+}
+RetVal SystemMemoryInfo::settotalPhysicalMemory() {
+    RetVal ret = GetWMIInfo(L"Win32_ComputerSystem", L"TotalPhysicalMemory", totalPhysicalMemory);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+RetVal SystemMemoryInfo::setRAMCapacity() {
+    RetVal ret = GetWMIInfo(L"Win32_PhysicalMemory", L"Capacity", RAMCapacity);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+
+RetVal SystemMemoryInfo::setRAMSpeed() {
+    RetVal ret = GetWMIInfo(L"Win32_PhysicalMemory", L"Speed", RAMSpeed);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+
+RetVal SystemMemoryInfo::setManufacturer() {
+    RetVal ret = GetWMIInfo(L"Win32_PhysicalMemory", L"Manufacturer", RAMManufacturer);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+
+RetVal SystemMemoryInfo::setRAMType() {
+   
+}
+
+
+
+RetVal SystemMemoryInfo::setFormFactor() {
+
+}
+
+
+RetVal SystemMemoryInfo::setRAMPartNumber() {
+
+}
+
+RetVal SystemMemoryInfo::setRAMSerialNumber() {
+
+}
+
+
+
+std::wstring SystemMemoryInfo::gettotalPhysicalMemory() {
+    return totalPhysicalMemory;
+}
+std::wstring SystemMemoryInfo::getRAMCapacity() {
+    return RAMCapacity;
+}
+std::wstring SystemMemoryInfo::getRAMSpeed() {
+    return RAMSpeed;
+}
+std::wstring SystemMemoryInfo::getRAMManufacturer() {
+    return RAMManufacturer;
+}
+
+
+// GPU Implementations
+RetVal GPUandDisplayInfo::setgpuName(){
+    RetVal ret = GetWMIInfo(L"Win32_VideoController", L"Name", gpuName);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+RetVal GPUandDisplayInfo::setgpuDriverVer() {
+    RetVal ret = GetWMIInfo(L"Win32_VideoController", L"Name", gpuName);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+
+RetVal GPUandDisplayInfo::setgpuAdapterCompatibility() {
+    RetVal ret = GetWMIInfo(L"Win32_VideoController", L"AdapterCompatibility", gpuAdapterCompatibility);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+RetVal GPUandDisplayInfo::setgpuDriverDate() {
+
+}
+
+RetVal GPUandDisplayInfo::setgpuTotalVRAM() {
+
+}
+RetVal GPUandDisplayInfo::setgpuVideoMemoryType() {
+
+}
+RetVal GPUandDisplayInfo::setgpuVideoArchitecture() {
+
+}
+RetVal GPUandDisplayInfo::setgpuVideoModeDescription() {
+
+}
+RetVal GPUandDisplayInfo::setgpuCurrentRefreshRate() {
+
+}
+RetVal GPUandDisplayInfo::setgpuCurrentHResolution() {
+
+}
+RetVal GPUandDisplayInfo::setgpuCurrentVResolution() {
+
+}
+RetVal GPUandDisplayInfo::setgpuMonitorType() {
+
+}
+RetVal GPUandDisplayInfo::setgpuScreenHeight() {
+
+}
+RetVal GPUandDisplayInfo::setgpuScreenWidth() {
+
+}
+
+std::wstring GPUandDisplayInfo::getgpuName() {
+    return gpuName;
+}
+
+std::wstring GPUandDisplayInfo::getgpuAdapterCompatibility() {
+    return gpuAdapterCompatibility;
+}

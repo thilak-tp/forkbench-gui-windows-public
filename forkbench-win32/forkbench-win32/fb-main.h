@@ -2,4 +2,6 @@
 #include "fetch-details.h"
 // The window procedure function prototype
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-void UpdateSystemInfo(CPUInfo& info);
+void UpdateCPUInfo(CPUInfo& info);
+void updateSystemMemoryInfo(SystemMemoryInfo& info);
+void updateGPUInfo(GPUandDisplayInfo& gpuInfo);

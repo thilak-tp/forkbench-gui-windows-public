@@ -1,4 +1,4 @@
-// Implicit headerfiles
+﻿// Implicit headerfiles
 #include <windows.h>
 #include <tchar.h>
 #include <string>
@@ -7,11 +7,15 @@
 #include "resource.h"
 #include "fb-main.h"
 #include "fetch-details.h"
-
+HBRUSH hbrTransparent = (HBRUSH)GetStockObject(HOLLOW_BRUSH);  // Global or static
 HINSTANCE hInst;
-HWND hCPUStatic, hCoreStatic, hRAMStatic, hThreadStatic, hCPUManufacturerStatic;
-HBITMAP hBitmap;
-
+HWND hCPUStatic, hCoreStatic, hRAMStatic, hThreadStatic, hCPUManufacturerStatic, hCPUMaxClockSpeed, hCPUCurrentClockSpeed, hCPUL1Cache, hCPUL2Cache, hCPUL3Cache, hArchitecture, hDisplayCore, hDisplayCPUInformation, hDisplaySystemMemInfo;
+// For System Memory specifications
+HWND hTotalPhysicalMem,hUsablePhysicalMem, hRAMSpeed, hRAMManufacturer ;
+// For GPU Specifications
+HWND hDisplayGPUInfo,hGPUName, hGPUAdapterCompatibility;
+HBITMAP hBitmapCPU, hBitmapRAM, hBitmapGPU;
+HFONT hFontDetails, hFontDisplayCore, hFontTitles;
 // This is the entry point of the application. It creates a window and registers a class for it.
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	const wchar_t className[] = L"Forkbench";
@@ -20,7 +24,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	WNDCLASSEX wc = {};
 	wc.hbrBackground = CreateSolidBrush(RGB(64, 64, 64));
 	wc.hInstance = hInstance;
-	wc.hIcon = LoadIcon(wc.hInstance, MAKEINTRESOURCE(IDI_ICON2));
+	wc.hIcon = LoadIcon(wc.hInstance, MAKEINTRESOURCE(IDI_ICON3));
 	wc.lpszClassName = className;
 	wc.cbSize = sizeof(WNDCLASSEX);
 	wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -33,7 +37,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return FAILED;
 	}
 	// This creates the actual visible window.
-	HWND hwnd = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, className, WS_SYSMENU | WS_MINIMIZEBOX | WS_OVERLAPPEDWINDOW , CW_USEDEFAULT, CW_USEDEFAULT, 1000, 900, NULL, NULL, hInstance, NULL);
+	HWND hwnd = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, className, WS_SYSMENU | WS_MINIMIZEBOX , CW_USEDEFAULT, CW_USEDEFAULT, 450, 600, NULL, NULL, hInstance, NULL);
 	if (!hwnd) {
 		MessageBox(NULL, _T("WIndows Creation Failed"), _T("Error"), NULL);
 		return FAILED;
@@ -59,8 +63,39 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	cpuInfo.setCPUManufacturer();
 	cpuInfo.setCPUNumberOfCores();
 	cpuInfo.setCPUNumberOfThreads();
+	cpuInfo.setCPUMaxClockSpeed();
+	cpuInfo.setCPUCurrentClockSpeed();
+	//cpuInfo.setCPUL1Cache();
+	cpuInfo.setCPUL2Cache();
+	cpuInfo.setCPUL3Cache();
+	cpuInfo.setCPUArchitecture();
+	SystemMemoryInfo memInfo;
+	memInfo.settotalPhysicalMemory();
+	memInfo.setRAMCapacity();
+	memInfo.setRAMSpeed();
+	memInfo.setManufacturer();
+	//GPU
+	GPUandDisplayInfo gpuInfo;
+	gpuInfo.setgpuName();
+	gpuInfo.setgpuAdapterCompatibility();
+
 	switch (msg)
 	{
+		
+
+	case WM_CTLCOLORSTATIC:
+	{
+		HDC hdcStatic = (HDC)wparam;
+		HWND hStatic = (HWND)lparam;
+
+		if (hStatic == hDisplayCore) {
+			SetBkMode(hdcStatic, TRANSPARENT);                   // Transparent background
+			SetTextColor(hdcStatic, RGB(0, 0, 0));          // Optional: white text
+			return (INT_PTR)hbrTransparent;                       // Use null brush
+		}
+	}
+	break;
+
 		// To handle the dragging of the widnow without the title bar
 	case WM_LBUTTONDOWN:
 		ReleaseCapture();
@@ -74,37 +109,145 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 		}
 		return 0;
 	case WM_CREATE: {
-		    hBitmap = (HBITMAP)LoadImageW(
+		//MessageBoxW(hwnd,gpuInfo.getgpuAdapterCompatibility().c_str(), gpuInfo.getgpuName().c_str(),0 );
+		if (cpuInfo.getCPUManufacturer() == L"Intel") {
+			hBitmapCPU = (HBITMAP)LoadImageW(
+				GetModuleHandleW(NULL),
+				MAKEINTRESOURCE(IDB_BITMAP4),
+				IMAGE_BITMAP,
+				0, 0,
+				LR_DEFAULTCOLOR);
+		}
+		else if (cpuInfo.getCPUManufacturer() == L"AMD") {
+			hBitmapCPU = (HBITMAP)LoadImageW(
+				GetModuleHandleW(NULL),
+				MAKEINTRESOURCE(IDB_BITMAP3),
+				IMAGE_BITMAP,
+				0, 0,
+				LR_DEFAULTCOLOR);
+		}
+		else {
+			hBitmapCPU = (HBITMAP)LoadImageW(
+				GetModuleHandleW(NULL),
+				MAKEINTRESOURCE(IDB_BITMAP5),
+				IMAGE_BITMAP,
+				0, 0,
+				LR_DEFAULTCOLOR);
+		}
+
+		hBitmapRAM = (HBITMAP)LoadImageW(
 			GetModuleHandleW(NULL),
-			MAKEINTRESOURCE(IDB_BITMAP2),
+			MAKEINTRESOURCE(IDB_BITMAP6),
 			IMAGE_BITMAP,
 			0, 0,
 			LR_DEFAULTCOLOR);
 
-		hCPUStatic = CreateWindowW(L"STATIC", L"CPU: Loading...",WS_CHILD | WS_VISIBLE, 20, 30, 600, 25, hwnd, NULL, hInst, NULL);
-		hCoreStatic = CreateWindowW(L"STATIC", L"Cores: Loading...",WS_CHILD | WS_VISIBLE, 20, 60, 600, 25, hwnd, NULL, hInst, NULL);
-		hRAMStatic = CreateWindowW(L"STATIC", L"RAM: Loading...",WS_CHILD | WS_VISIBLE, 20, 90, 600, 25, hwnd, NULL, hInst, NULL);
-		hThreadStatic = CreateWindowW(L"STATIC", L"CPU: Loading...", WS_CHILD | WS_VISIBLE, 20, 120, 600, 25, hwnd, NULL, hInst, NULL);
-		hCPUManufacturerStatic = CreateWindowW(L"STATIC", L"CPU: Loading...", WS_CHILD | WS_VISIBLE, 20, 150, 600, 25, hwnd, NULL, hInst, NULL);
+		hFontDetails = CreateFontW(16, 0, 0, 0, FW_MEDIUM, FALSE, FALSE, FALSE,
+				DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,
+				CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
+		/*hFontDisplayCore = CreateFontW(25, 0, 0, 0, FW_MEDIUM, FALSE, FALSE, FALSE,
+				DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,
+				CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");*/
+		hFontDisplayCore = CreateFontW(
+			30, 0, 0, 0,
+			FW_NORMAL,                    // Use FW_NORMAL here; Segoe UI Semibold is already bold
+			FALSE, FALSE, FALSE,
+			DEFAULT_CHARSET,
+			OUT_OUTLINE_PRECIS,
+			CLIP_DEFAULT_PRECIS,
+			CLEARTYPE_QUALITY,
+			DEFAULT_PITCH,
+			L"Segoe UI Semibold"
+		);
+		hFontTitles = CreateFontW(16, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
+			DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,
+			CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
+
+		hDisplayCPUInformation = CreateWindowW(L"STATIC", L"CPU Specifications", WS_CHILD | WS_VISIBLE | SS_CENTER, 10, 10, 410, 15, hwnd, NULL, hInst, NULL);
+		hCPUStatic = CreateWindowW(L"STATIC", L"CPU: Loading...",WS_CHILD | WS_VISIBLE, 120, 30, 300, 15, hwnd, NULL, hInst, NULL);
+		hCoreStatic = CreateWindowW(L"STATIC", L"Cores: Loading...",WS_CHILD | WS_VISIBLE, 120, 50, 140, 15, hwnd, NULL, hInst, NULL);
+		//hRAMStatic = CreateWindowW(L"STATIC", L"RAM: Loading...",WS_CHILD | WS_VISIBLE, 20, 90, 600, 25, hwnd, NULL, hInst, NULL);
+		hThreadStatic = CreateWindowW(L"STATIC", L"CPU: Loading...", WS_CHILD | WS_VISIBLE, 264, 50, 155, 15, hwnd, NULL, hInst, NULL);
+		hCPUManufacturerStatic = CreateWindowW(L"STATIC", L"Manufacturer: Loading...", WS_CHILD | WS_VISIBLE, 120, 70, 140, 15, hwnd, NULL, hInst, NULL);
+		hCPUMaxClockSpeed = CreateWindowW(L"STATIC", L"Max Clock Speed: Loading...", WS_CHILD | WS_VISIBLE, 120, 90, 300, 15, hwnd, NULL, hInst, NULL);
+		//hCPUCurrentClockSpeed = CreateWindowW(L"STATIC", L"Current Clock Speed: Loading...", WS_CHILD | WS_VISIBLE, 100, 120, 300, 15, hwnd, NULL, hInst, NULL);
+		//hCPUL1Cache = CreateWindowW(L"STATIC", L"L1 Cache: Loading...", WS_CHILD | WS_VISIBLE, 100, 100, 140, 15, hwnd, NULL, hInst, NULL);
+		hCPUL2Cache = CreateWindowW(L"STATIC", L"L2 Cache: Loading...", WS_CHILD | WS_VISIBLE, 120, 110, 140, 15, hwnd, NULL, hInst, NULL);
+		hCPUL3Cache = CreateWindowW(L"STATIC", L"L3 Cache: Loading...", WS_CHILD | WS_VISIBLE, 264, 110, 155, 15, hwnd, NULL, hInst, NULL);
+		hArchitecture = CreateWindowW(L"STATIC", L"Architecture: Loading...", WS_CHILD | WS_VISIBLE, 264, 70, 155, 15, hwnd, NULL, hInst, NULL);
+		hDisplayCore = CreateWindowW(L"STATIC", L"!", WS_CHILD | WS_VISIBLE, 78, 94, 30, 30, hwnd, NULL, hInst, NULL);
+		
+		
+		//RAM Specs
+		hDisplaySystemMemInfo = CreateWindowW(L"STATIC", L"System Memory Specifications", WS_CHILD | WS_VISIBLE | SS_CENTER, 10, 135, 410, 15, hwnd, NULL, hInst, NULL);
+		hTotalPhysicalMem = CreateWindowW(L"STATIC", L"Total RAM: Loading...", WS_CHILD | WS_VISIBLE, 120, 155, 300, 15, hwnd, NULL, hInst, NULL);
+		hUsablePhysicalMem = CreateWindowW(L"STATIC", L"Usable RAM: Loading...", WS_CHILD | WS_VISIBLE, 120, 175, 300, 15, hwnd, NULL, hInst, NULL);
+		hRAMSpeed = CreateWindowW(L"STATIC", L"Speed: Loading...", WS_CHILD | WS_VISIBLE, 120, 195, 140, 15, hwnd, NULL, hInst, NULL);
+		hRAMManufacturer = CreateWindowW(L"STATIC", L"Manufacturer: Loading...", WS_CHILD | WS_VISIBLE, 264, 195, 155, 15, hwnd, NULL, hInst, NULL);
+		
+		//GPU Specs
+		hDisplayGPUInfo = CreateWindowW(L"STATIC", L"GPU Specifications", WS_CHILD | WS_VISIBLE | SS_CENTER, 10, 215, 410, 15, hwnd, NULL, hInst, NULL);
+		hGPUName = CreateWindowW(L"STATIC", L"GPU: Loading...", WS_CHILD | WS_VISIBLE, 120, 235, 300, 15, hwnd, NULL, hInst, NULL);
+		hGPUAdapterCompatibility = CreateWindowW(L"STATIC", L"Manufacturer: Loading...", WS_CHILD | WS_VISIBLE, 120, 255, 300, 15, hwnd, NULL, hInst, NULL);
+
+
+		// Apply font
+		HWND controls[] = { hCPUStatic,hGPUName, hGPUAdapterCompatibility,hCoreStatic, hThreadStatic, hCPUManufacturerStatic, hCPUMaxClockSpeed,
+							hCPUCurrentClockSpeed, hCPUL2Cache, hCPUL3Cache, hArchitecture,hTotalPhysicalMem,hUsablePhysicalMem,hRAMSpeed, hRAMManufacturer };
+		for (auto hwndCtrl : controls) {
+			SendMessageW(hwndCtrl, WM_SETFONT, (WPARAM)hFontDetails, TRUE);
+		}
+		SendMessageW(hDisplayCore, WM_SETFONT, (WPARAM)hFontDisplayCore, TRUE);
+		HWND titles[] = { hDisplayCPUInformation, hDisplaySystemMemInfo,hDisplayGPUInfo };
+		for (auto hwndCtrl : titles) {
+			SendMessageW(hwndCtrl, WM_SETFONT, (WPARAM)hFontTitles, TRUE);
+		}
+		
 		break;
 	}
 	case WM_PAINT: {
-		UpdateSystemInfo(cpuInfo);
+
+		UpdateCPUInfo(cpuInfo);
+		updateSystemMemoryInfo(memInfo);
+		updateGPUInfo(gpuInfo);
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hwnd, &ps);
 		
-		if (hBitmap) {
+		if (hBitmapCPU) {
+			BITMAP bitmap;
+			GetObject(hBitmapCPU, sizeof(BITMAP), &bitmap);
+
 			HDC hMemDC = CreateCompatibleDC(hdc);
-			SelectObject(hMemDC, hBitmap);
+			HBITMAP hOldBitmap = (HBITMAP) SelectObject(hMemDC, hBitmapCPU);
 
-			BITMAP bmp;
-			GetObject(hBitmap, sizeof(BITMAP), &bmp);
+			SetStretchBltMode(hdc, HALFTONE);
 
-			BitBlt(hdc, 650, 20, bmp.bmWidth, bmp.bmHeight, hMemDC, 0, 0, SRCCOPY);
+			int scaledWidth = bitmap.bmWidth / 5;
+			int scaledHeight = bitmap.bmHeight /5;
+
+			StretchBlt(hdc, 10,30,scaledWidth ,scaledHeight, hMemDC,0,0, bitmap.bmWidth, bitmap.bmHeight, SRCCOPY);
+			SelectObject(hMemDC, hOldBitmap);
 
 			DeleteDC(hMemDC);
 		}
+		if (hBitmapRAM) {
+			BITMAP bitmapRAM;
+			GetObject(hBitmapRAM, sizeof(BITMAP), &bitmapRAM);
 
+			HDC hMemDC = CreateCompatibleDC(hdc);
+			HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hBitmapRAM);
+
+			SetStretchBltMode(hdc, HALFTONE);
+
+			int scaledWidth = bitmapRAM.bmWidth / 5;
+			int scaledHeight = bitmapRAM.bmHeight / 5;
+
+			// Adjust position to avoid overlap with CPU image
+			StretchBlt(hdc, 10, 155, scaledWidth, scaledHeight, hMemDC, 0, 0, bitmapRAM.bmWidth, bitmapRAM.bmHeight, SRCCOPY);
+
+			SelectObject(hMemDC, hOldBitmap);
+			DeleteDC(hMemDC);
+		}
 		EndPaint(hwnd, &ps);
 		}
 		return 0;
@@ -135,16 +278,75 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 		return DefWindowProc(hwnd, msg, wparam, lparam);
 	}
  }
-void UpdateSystemInfo(CPUInfo& info) {
-	std::wstring cpuName = info.getCPUName();
-	std::wstring cores = info.getCPUNumberOfCores();
-	std::wstring threads = info.getCPUNumberOfThreads();
-	std::wstring cpuManufacturer = info.getCPUManufacturer();
 
+void updateGPUInfo(GPUandDisplayInfo& gpuInfo) {
+	std::wstring gpuName = gpuInfo.getgpuName();
+	std::wstring gpuManufacturer = gpuInfo.getgpuAdapterCompatibility();
+	if (!gpuName.empty()) SetWindowTextW(hGPUName, (L"GPU: " + gpuName).c_str());
+	if (!gpuManufacturer.empty()) SetWindowTextW(hGPUAdapterCompatibility, (L"Manufacturer: " + gpuManufacturer).c_str());
+}
+void updateSystemMemoryInfo(SystemMemoryInfo& info) {
+	std::wstring totalRam = info.getRAMCapacity();
+	std::wstring usableRam = info.gettotalPhysicalMemory();
+	float iTotalRAMGB = std::stof(totalRam);
+	float iUsableRAMGB = std::stof(usableRam);
+	std::wstring RAMSpeed = info.getRAMSpeed() + L" MHz";
+	std::wstring RAMManufacturer = info.getRAMManufacturer();
+
+	
+
+	iTotalRAMGB = iTotalRAMGB / 1024 / 1024 / 1024;
+	iUsableRAMGB = iUsableRAMGB / 1024 / 1024 / 1024;
+	std::wstring totalRamGB = std::to_wstring(iTotalRAMGB) + L" GB";
+	std::wstring usableRamGB = std::to_wstring(iUsableRAMGB) + L" GB";
+
+
+	if (!totalRamGB.empty()) SetWindowTextW(hTotalPhysicalMem, (L"Total RAM: " + totalRamGB).c_str());
+	if (!usableRamGB.empty()) SetWindowTextW(hUsablePhysicalMem, (L"Usable RAM: " + usableRamGB).c_str());
+	if (!RAMSpeed.empty()) SetWindowTextW(hRAMSpeed, (L"Speed: " + RAMSpeed).c_str());
+	if (!RAMManufacturer.empty()) SetWindowTextW(hRAMManufacturer, (L"Manufacturer: " + RAMManufacturer).c_str());
+}
+void UpdateCPUInfo(CPUInfo& info) {
+	std::wstring cpuName = info.getCPUName();
+	std::wstring cpuNumberOfCores = info.getCPUNumberOfCores();
+	std::wstring cpuNumberOfThreads = info.getCPUNumberOfThreads();
+	std::wstring cpuManufacturer = info.getCPUManufacturer();
+	std::wstring cpuMaxClockSpeed = info.getCPUMaxClockSpeed();
+	std::wstring cpuCurrentClockSpeed = info.getCPUCurrentClockSpeed();
+	//std::wstring cpuL1Cache = info.getCPUL1Cache();
+	std::wstring cpuL2Cache = info.getCPUL2Cache();
+	std::wstring cpuL3Cache = info.getCPUL3Cache();
+	std::wstring cpuArchitecture = decodeProcessorArchitecture(info.getCPUArchitecture());
+	
+	
+	//float cpuL1CacheMB = std::stoi(cpuL1Cache);
+	//cpuL1CacheMB = cpuL1CacheMB / 1024;
+	int cpuL2CacheMB = std::stoi(cpuL2Cache);
+	cpuL2CacheMB = cpuL2CacheMB / 1024;
+	int cpuL3CacheMB = std::stoi(cpuL3Cache);
+	cpuL3CacheMB = cpuL3CacheMB / 1024;
+	float cpuMaxGHZ = std::stof(cpuMaxClockSpeed.c_str());
+	cpuMaxGHZ /= 1000.0f; // Convert to GHz
+	cpuMaxGHZ = static_cast<float>(static_cast<int>(cpuMaxGHZ * 100)) / 100; // Round to 2 decimal places
+	float cpuCurrentGHZ = std::stoi(cpuCurrentClockSpeed.c_str());
+	cpuCurrentGHZ /= 1000.0f; // Convert to GHz
+	cpuCurrentGHZ = static_cast<float>(static_cast<int>(cpuCurrentGHZ * 100)) / 100; // Round to 2 decimal places
+	std::wstring cpuMaxClockSpeedGHZ = std::to_wstring(cpuMaxGHZ) + L" GHz";
+	std::wstring cpuCurrentClockSpeedGHZ = std::to_wstring(cpuCurrentGHZ) + L" GHz";
+	//std::wstring L1CacheMB = std::to_wstring(cpuL1CacheMB) + L" MB";
+	std::wstring L2CacheMB = std::to_wstring(cpuL2CacheMB) + L" MB";
+	std::wstring L3CacheMB = std::to_wstring(cpuL3CacheMB) + L" MB";
 	if (!cpuName.empty()) SetWindowTextW(hCPUStatic, (L"CPU: " + cpuName).c_str());
-	if (!cores.empty()) SetWindowTextW(hCoreStatic, (L"Cores: " + cores).c_str());
-	if (!threads.empty()) SetWindowTextW(hThreadStatic, (L"Threads: " + threads).c_str());
+	if (!cpuNumberOfCores.empty()) SetWindowTextW(hCoreStatic, (L"Cores: " + cpuNumberOfCores).c_str());
+	if (!cpuNumberOfThreads.empty()) SetWindowTextW(hThreadStatic, (L"Threads: " + cpuNumberOfThreads).c_str());
 	if (!cpuManufacturer.empty()) SetWindowTextW(hCPUManufacturerStatic, (L"Manufacturer: " + cpuManufacturer).c_str());
+	if (!cpuMaxClockSpeed.empty()) SetWindowTextW(hCPUMaxClockSpeed, (L"Max Clock Speed: " + cpuMaxClockSpeed + L" ( " +cpuMaxClockSpeedGHZ + L" )").c_str());
+	//if (!cpuCurrentClockSpeedGHZ.empty()) SetWindowTextW(hCPUCurrentClockSpeed, (L"Curent Clock Speed: " + cpuCurrentClockSpeed + L" ( " + cpuCurrentClockSpeedGHZ + L" )").c_str());
+	//if (!L2CacheMB.empty()) SetWindowTextW(hCPUL2Cache, (L"L2 Cache: " + L2CacheMB).c_str());
+	if (!L2CacheMB.empty()) SetWindowTextW(hCPUL2Cache, (L"L2 Cache: " + L2CacheMB).c_str());
+	if (!L3CacheMB.empty()) SetWindowTextW(hCPUL3Cache, (L"L3 Cache: " + L3CacheMB).c_str());
+	if (!cpuArchitecture.empty()) SetWindowTextW(hArchitecture, (L"Architecture: " + cpuArchitecture).c_str());
+	if (!cpuNumberOfCores.empty()) SetWindowTextW(hDisplayCore, cpuNumberOfCores.c_str());
 
 	
 }
