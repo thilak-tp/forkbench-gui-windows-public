@@ -3,15 +3,25 @@
 #include <Wbemidl.h>
 #include <comdef.h>
 #include <string>
-
+#include <d3d11.h>
+#include <dxgi.h>
+#include <dxgi1_4.h>
+// To fetch GPU VRAM
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
 
 #pragma comment(lib, "wbemuuid.lib")
+
+
 #include "app_defs.h"
+
+
 RetVal GetWMIInfo(const std::wstring& wmiClass, const std::wstring& property, std::wstring& result);
 //void collectWMIInfo(HWND hwnd);
 //std::wstring getL1CacheSize();
 std::wstring decodeMemoryType(const std::wstring& typeCode);
 std::wstring decodeProcessorArchitecture(std::wstring architectureCodeInput);
+RetVal GetVRAM_DirectX(std::wstring& result);
 
 
 class Computer {
@@ -73,6 +83,17 @@ class OSInfo : public Computer {
 	std::wstring osSystemDrive;
 public:
 	OSInfo(); 
+	RetVal setosName();
+	RetVal setosVersion();
+	RetVal setosBuildNumber();
+	RetVal setOSArchitecture();
+	RetVal setosSystemDrive();
+	
+	std::wstring getosName();
+	std::wstring getosVersion();
+	std::wstring getosBuildNumber();
+	std::wstring getosArchitecture();
+	std::wstring getosSystemDrive();
 };
 class StorageInfo : public Computer {
 	std::wstring diskSize;

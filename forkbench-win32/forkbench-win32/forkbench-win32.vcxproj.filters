@@ -93,5 +93,8 @@
     <Image Include="..\..\resources\gpu-amd.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\..\..\res\os-windows.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

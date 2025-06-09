@@ -368,6 +368,8 @@ OSInfo::OSInfo() {
     osSystemDrive = L"";
 }
 
+
+
 StorageInfo::StorageInfo() {
     diskSize = L"";
     diskType = L"";
@@ -821,7 +823,8 @@ RetVal GPUandDisplayInfo::setgpuDriverDate() {
 }
 
 RetVal GPUandDisplayInfo::setgpuTotalVRAM() {
-
+    GetVRAM_DirectX(gpuTotalVRAM);
+    return SUCCESS;
 }
 RetVal GPUandDisplayInfo::setgpuVideoMemoryType() {
 
@@ -865,4 +868,176 @@ std::wstring GPUandDisplayInfo::getgpuDriverVer() {
 
 std::wstring GPUandDisplayInfo::getgpuDriverDate() {
     return gpuDriverDate;
+}
+
+std::wstring GPUandDisplayInfo::getgpuTotalVRAM() {
+    return gpuTotalVRAM;
+}
+
+// Operating System 
+
+RetVal OSInfo::setosName() {
+    RetVal ret = GetWMIInfo(L"Win32_OperatingSystem", L"Caption", osName);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+
+RetVal OSInfo::setosVersion() {
+    RetVal ret = GetWMIInfo(L"Win32_OperatingSystem", L"Version", osVersion);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+
+RetVal OSInfo::setosBuildNumber() {
+    RetVal ret = GetWMIInfo(L"Win32_OperatingSystem", L"BuildNumber", osBuildNumber);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+
+RetVal OSInfo::setOSArchitecture() {
+    RetVal ret = GetWMIInfo(L"Win32_OperatingSystem", L"OSArchitecture", OSArchitecture);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+
+RetVal OSInfo::setosSystemDrive() {
+    RetVal ret = GetWMIInfo(L"Win32_OperatingSystem", L"SystemDrive", osSystemDrive);
+    switch (ret) {
+
+    case COM_INIT_FAILED: return FAILED;
+    case SEC_INIT_FAILED: return FAILED;
+    case WLOCATOR_CREATION_FAILED: return FAILED;
+    case CONNECT_SERVER_FAILED: return FAILED;
+    case SET_PROXY_BLANKED_FAILED: return FAILED;
+    case QUERY_EXEC_FAILED: return FAILED;
+    case UNSUPPORTED_TYPE: return FAILED;
+
+    }
+    return SUCCESS;
+}
+
+
+std::wstring OSInfo::getosName() {
+    return osName;
+}
+
+std::wstring OSInfo::getosVersion() {
+    return osVersion;
+}
+
+std::wstring OSInfo::getosBuildNumber() {
+    return osBuildNumber;
+}
+
+std::wstring OSInfo::getosArchitecture() {
+    return OSArchitecture;
+}
+std::wstring OSInfo::getosSystemDrive() {
+    return osSystemDrive;
+}
+
+
+
+
+
+
+
+//RetVal GetVRAM_DirectX(std::wstring& result) {
+//    IDXGIFactory4* pFactory = nullptr;
+//    if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pFactory)))) {
+//        return FAILED;
+//    }
+//
+//    IDXGIAdapter1* pAdapter1 = nullptr;
+//    for (UINT i = 0; pFactory->EnumAdapters1(i, &pAdapter1) != DXGI_ERROR_NOT_FOUND; ++i) {
+//        IDXGIAdapter3* pAdapter3 = nullptr;
+//        if (SUCCEEDED(pAdapter1->QueryInterface(IID_PPV_ARGS(&pAdapter3)))) {
+//            DXGI_QUERY_VIDEO_MEMORY_INFO memInfo = {};
+//            if (SUCCEEDED(pAdapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &memInfo))) {
+//                double totalVRAMGB = static_cast<double>(memInfo.Budget) / (1024 * 1024 * 1024);
+//
+//                wchar_t buffer[32];
+//                swprintf_s(buffer, L"%.2f GB", totalVRAMGB);
+//                result = buffer;
+//
+//                pAdapter3->Release();
+//                pAdapter1->Release();
+//                pFactory->Release();
+//                return SUCCESS;
+//            }
+//            pAdapter3->Release();
+//        }
+//        pAdapter1->Release();
+//    }
+//
+//    pFactory->Release();
+//    return FAILED;
+//}
+
+RetVal GetVRAM_DirectX(std::wstring& result) {
+    IDXGIFactory* pFactory = nullptr;
+    if (FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&pFactory))) {
+        return FAILED;
+    }
+
+    IDXGIAdapter* pAdapter = nullptr;
+    for (UINT i = 1; pFactory->EnumAdapters(i, &pAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
+        DXGI_ADAPTER_DESC adapterDesc;
+        if (SUCCEEDED(pAdapter->GetDesc(&adapterDesc))) {
+            SIZE_T vramBytes = adapterDesc.DedicatedVideoMemory;
+            double vramGB = static_cast<double>(vramBytes) / (1024 * 1024 * 1024);
+
+            wchar_t buffer[32];
+            swprintf_s(buffer, L"%.2f GB", vramGB);
+            result = buffer;
+
+            pAdapter->Release();
+            pFactory->Release();
+            return SUCCESS;  // Return early after first GPU
+        }
+        pAdapter->Release();
+    }
+
+    pFactory->Release();
+    return FAILED;
 }

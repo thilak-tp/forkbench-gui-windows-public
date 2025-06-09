@@ -141,6 +141,7 @@
     <Image Include="..\..\..\res\cpu-amd.bmp" />
     <Image Include="..\..\..\res\cpu-intel.bmp" />
     <Image Include="..\..\..\res\cpu-unknown.bmp" />
+    <Image Include="..\..\..\res\os-windows.bmp" />
     <Image Include="..\..\..\res\ramIcon.bmp" />
     <Image Include="..\..\resources\bitmap1.bmp" />
     <Image Include="..\..\resources\forkIconNew.ico" />
